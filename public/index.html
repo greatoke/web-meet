@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Video Chat</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>WebRTC Video Chat</h1>
+            <p>Connect with others through secure peer-to-peer video calls</p>
+            <div class="server-info">
+                <p>Server: <span id="serverAddress">Connecting...</span></p>
+            </div>
+        </header>
+
+        <div class="connection-status disconnected">
+            <i class="fas fa-circle"></i>
+            <span>Disconnected</span>
+        </div>
+
+  <div class="video-container">
+            <div class="video-wrapper">
+                <video id="localVideo" autoplay playsinline muted></video>
+                <div class="video-label">You</div>
+                <div class="loading" style="display: none;"></div>
+            </div>
+            <div class="video-wrapper">
+    <video id="remoteVideo" autoplay playsinline></video>
+                <div class="video-label">Remote</div>
+                <div class="loading" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="device-selection">
+                <select id="cameraSelect" disabled>
+                    <option value="">Select Camera</option>
+                </select>
+            </div>
+            <button id="startCall" disabled>
+                <i class="fas fa-phone"></i>
+                Start Call
+            </button>
+            <button id="toggleVideo" style="display: none;">
+                <i class="fas fa-video"></i>
+                Toggle Video
+            </button>
+            <button id="toggleAudio" style="display: none;">
+                <i class="fas fa-microphone"></i>
+                Toggle Audio
+            </button>
+            <button id="endCall" style="display: none;">
+                <i class="fas fa-phone-slash"></i>
+                End Call
+            </button>
+        </div>
+
+        <div class="status" id="status"></div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
