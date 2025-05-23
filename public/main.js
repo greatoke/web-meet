@@ -192,7 +192,7 @@ async function toggleVideoStream() {
         if (videoTrack) {
             videoTrack.enabled = !videoTrack.enabled;
             isVideoEnabled = videoTrack.enabled;
-            toggleVideo.innerHTML = `<i class="fas fa-video${isVideoEnabled ? '' : '-slash'}"></i> Toggle Video`;
+            toggleVideo.innerHTML = `<i class="fas fa-video${isVideoEnabled ? '' : '-slash'}"></i>`;
         }
     }
 }
@@ -204,7 +204,7 @@ async function toggleAudioStream() {
         if (audioTrack) {
             audioTrack.enabled = !audioTrack.enabled;
             isAudioEnabled = audioTrack.enabled;
-            toggleAudio.innerHTML = `<i class="fas fa-microphone${isAudioEnabled ? '' : '-slash'}"></i> Toggle Audio`;
+            toggleAudio.innerHTML = `<i class="fas fa-microphone${isAudioEnabled ? '' : '-slash'}"></i>`;
         }
   }
 }
