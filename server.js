@@ -1,5 +1,6 @@
 const express = require('express');
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const WebSocket = require('ws');
@@ -26,14 +27,21 @@ function getLocalIP() {
     return 'localhost';
 }
 
-// SSL certificate options
-const options = {
-    key: fs.readFileSync(path.join(__dirname, 'certificates', 'key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'certificates', 'cert.pem'))
-};
+// Create server based on environment
+let server;
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
-// Create HTTPS server
-const server = https.createServer(options, app);
+if (isDevelopment) {
+    // SSL certificate options for development
+    const options = {
+        key: fs.readFileSync(path.join(__dirname, 'certificates', 'key.pem')),
+        cert: fs.readFileSync(path.join(__dirname, 'certificates', 'cert.pem'))
+    };
+    server = https.createServer(options, app);
+} else {
+    // Use HTTP in production
+    server = http.createServer(app);
+}
 
 // Create WebSocket server
 const wss = new WebSocket.Server({ server });
@@ -133,8 +141,10 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     const localIP = getLocalIP();
+    const protocol = isDevelopment ? 'https' : 'http';
     console.log('\n=== WebRTC Signaling Server ===');
-    console.log(`Server started on https://${localIP}:${PORT}`);
+    console.log(`Server started on ${protocol}://${localIP}:${PORT}`);
+    console.log('Environment:', isDevelopment ? 'Development' : 'Production');
     console.log('Waiting for connections...');
     console.log('=============================\n');
 });
