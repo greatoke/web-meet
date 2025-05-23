@@ -8,6 +8,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <div id="startup-overlay">
+        <div class="startup-content">
+            <div class="startup-logo">
+                <i class="fas fa-video fa-3x"></i>
+            </div>
+            <h1 class="startup-title">WebMeet</h1>
+            <p class="startup-tagline">Connect. Meet. Collaborate.</p>
+            <div class="startup-loader"></div>
+        </div>
+    </div>
+    <div id="landing-overlay">
+        <form id="landing-form" class="landing-content" autocomplete="off">
+            <h2 class="landing-title">Welcome to WebMeet</h2>
+            <p class="landing-subtitle">Connect with others through secure peer-to-peer video calls</p>
+            <button type="button" id="newMeetingBtn" class="landing-btn primary">
+                <i class="fas fa-plus-circle"></i>
+                <span>New Meeting</span>
+            </button>
+            <div class="landing-divider">or</div>
+            <div class="landing-fields">
+                <input type="text" id="inviteCodeInput" placeholder="Enter invite code" required />
+                <button type="submit" id="joinMeetingBtn" class="landing-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Join</span>
+                </button>
+            </div>
+        </form>
+    </div>
     <div class="container">
         <header class="header">
             <h1>WebMeet Video Chat</h1>

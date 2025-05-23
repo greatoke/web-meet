@@ -8,6 +8,7 @@ const status = document.getElementById('status');
 const connectionStatus = document.querySelector('.connection-status');
 const cameraSelect = document.getElementById('cameraSelect');
 const serverAddress = document.getElementById('serverAddress');
+const container = document.querySelector('.container');
 
 let localStream, peerConnection;
 let isWebSocketReady = false;
@@ -410,4 +411,70 @@ function handleOrientation() {
 
 // Add orientation change listener
 window.addEventListener('orientationchange', handleOrientation);
+
+// Splash and landing overlay logic
+window.addEventListener('DOMContentLoaded', () => {
+  const splashOverlay = document.getElementById('startup-overlay');
+  const landingOverlay = document.getElementById('landing-overlay');
+
+  // Show splash, then show landing overlay after splash animation
+  if (splashOverlay && landingOverlay) {
+    landingOverlay.style.display = 'none';
+    setTimeout(() => {
+      splashOverlay.classList.add('hide');
+      setTimeout(() => {
+        splashOverlay.style.display = 'none';
+        landingOverlay.style.display = '';
+      }, 700);
+    }, 2500);
+  }
+
+  // Landing overlay logic (unchanged)
+  const landingForm = document.getElementById('landing-form');
+  const newMeetingBtn = document.getElementById('newMeetingBtn');
+  const inviteCodeInput = document.getElementById('inviteCodeInput');
+
+  function goToMeeting(code) {
+    // Use URL hash for meeting code
+    window.location.hash = `#${code}`;
+    landingOverlay.classList.add('hide');
+    setTimeout(() => {
+      landingOverlay.style.display = 'none';
+      if (container) container.style.display = 'block';
+    }, 700);
+  }
+
+  function generateMeetingCode() {
+    // Simple random code, e.g., 6 alphanumeric chars
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+
+  if (newMeetingBtn) {
+    newMeetingBtn.addEventListener('click', () => {
+      const code = generateMeetingCode();
+      goToMeeting(code);
+    });
+  }
+
+  if (landingForm) {
+    landingForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const code = inviteCodeInput.value.trim();
+      if (code) {
+        goToMeeting(code);
+      } else {
+        inviteCodeInput.focus();
+      }
+    });
+  }
+
+  // If already in a meeting (URL hash), hide overlay and show app
+  if (window.location.hash && window.location.hash.length > 1) {
+    landingOverlay.classList.add('hide');
+    setTimeout(() => {
+      landingOverlay.style.display = 'none';
+      if (container) container.style.display = 'block';
+    }, 700);
+  }
+});
 
