@@ -9,6 +9,8 @@ const connectionStatus = document.querySelector('.connection-status');
 const cameraSelect = document.getElementById('cameraSelect');
 const serverAddress = document.getElementById('serverAddress');
 const container = document.querySelector('.container');
+const screenShare = document.getElementById('screenShare');
+const recordCall = document.getElementById('recordCall');
 
 let localStream, peerConnection;
 let isWebSocketReady = false;
@@ -18,6 +20,11 @@ let isCallStarted = false;
 let isVideoEnabled = true;
 let isAudioEnabled = true;
 let currentCameraId = '';
+let isScreenSharing = false;
+let originalVideoTrack = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
 
 // Update WebSocket connection to use WSS
 const wsProtocol = 'wss:';
@@ -229,6 +236,8 @@ function endCallProcess() {
     toggleVideo.style.display = 'none';
     toggleAudio.style.display = 'none';
     endCall.style.display = 'none';
+    if (screenShare) screenShare.style.display = 'none';
+    if (recordCall) recordCall.style.display = 'none';
     updateStatus('Call ended');
 }
 
@@ -365,6 +374,8 @@ async function startCallProcess() {
     toggleVideo.style.display = 'flex';
     toggleAudio.style.display = 'flex';
     endCall.style.display = 'flex';
+    if (screenShare) screenShare.style.display = 'flex';
+    if (recordCall) recordCall.style.display = 'flex';
 
   if (isInitiator) {
     console.log('Creating offer');
@@ -477,4 +488,93 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 700);
   }
 });
+
+if (screenShare) {
+  screenShare.addEventListener('click', async () => {
+    if (!isScreenSharing) {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const screenTrack = screenStream.getVideoTracks()[0];
+        originalVideoTrack = localStream.getVideoTracks()[0];
+        // Replace video track in peer connection
+        const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (sender) await sender.replaceTrack(screenTrack);
+        // Update local video
+        localVideo.srcObject = screenStream;
+        isScreenSharing = true;
+        screenShare.title = 'Stop Sharing';
+        screenShare.querySelector('i').className = 'fas fa-times-circle';
+        // When user stops sharing
+        screenTrack.onended = async () => {
+          if (originalVideoTrack) {
+            if (sender) await sender.replaceTrack(originalVideoTrack);
+            localVideo.srcObject = localStream;
+            isScreenSharing = false;
+            screenShare.title = 'Share Screen';
+            screenShare.querySelector('i').className = 'fas fa-desktop';
+          }
+        };
+      } catch (err) {
+        console.error('Screen sharing error:', err);
+      }
+    } else {
+      // Stop screen sharing, revert to camera
+      const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+      if (originalVideoTrack && sender) {
+        await sender.replaceTrack(originalVideoTrack);
+        localVideo.srcObject = localStream;
+      }
+      isScreenSharing = false;
+      screenShare.title = 'Share Screen';
+      screenShare.querySelector('i').className = 'fas fa-desktop';
+    }
+  });
+}
+
+if (recordCall) {
+  recordCall.addEventListener('click', () => {
+    if (!isRecording) {
+      // Start recording
+      let combinedStream;
+      if (remoteVideo.srcObject) {
+        // Mix local and remote streams
+        combinedStream = new MediaStream([
+          ...localStream.getTracks(),
+          ...remoteVideo.srcObject.getTracks()
+        ]);
+      } else {
+        combinedStream = localStream;
+      }
+      recordedChunks = [];
+      mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm; codecs=vp9' });
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'recording.webm';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      recordCall.classList.add('recording');
+      recordCall.title = 'Stop Recording';
+    } else {
+      // Stop recording
+      mediaRecorder.stop();
+      isRecording = false;
+      recordCall.classList.remove('recording');
+      recordCall.title = 'Record Call';
+    }
+  });
+}
 
